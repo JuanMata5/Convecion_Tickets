@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ticket - Manchas Plein Air</title>
+  <style>
+    body {
+      background: #eceff1;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .ticket {
+      width: 420px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      background: #ffffff;
+      position: relative;
+      text-align: center;
+      padding: 20px;
+      border: 2px solid #ddd;
+      background-clip: padding-box;
+    }
+
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ticket-header h1 {
+      margin: 0;
+      font-size: 22px;
+      color: #222;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .categoria {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 12px;
+      color: #fff;
+    }
+
+    .categoria.basico { background: #607d8b; }
+    .categoria.vip { background: #ff9800; }
+    .categoria.premium { background: #9c27b0; }
+
+    .ticket-body { margin-top: 25px; text-align: left; }
+    .ticket-body p { margin: 10px 0 4px 0; }
+    .label { font-size: 12px; opacity: 0.6; }
+    .valor { font-size: 18px; font-weight: 600; color: #222; }
+    .codigo {
+      font-family: monospace;
+      font-size: 16px;
+      background: #f0f0f0;
+      padding: 6px 12px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-top: 10px;
+      letter-spacing: 1px;
+    }
+
+    .ticket-footer {
+      margin-top: 25px;
+      font-size: 12px;
+      opacity: 0.7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #btnPDF {
+      margin-top: 25px;
+      padding: 12px 15px;
+      background: #3f51b5;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: 0.3s;
+    }
+
+    #btnPDF:hover { background: #303f9f; }
+  </style>
+</head>
+<body>
+
+<div class="ticket" id="ticket">
+  <div class="ticket-header">
+    <h1>MANCHAS PLEIN AIR</h1>
+    <span id="categoria" class="categoria basico">BÁSICO</span>
+  </div>
+
+  <div class="ticket-body">
+    <p class="label">Nombre y Apellido</p>
+    <p id="nombre" class="valor">—</p>
+
+    <p class="label">Evento</p>
+    <p id="evento" class="valor">—</p>
+
+    <p class="label">Código</p>
+    <p id="codigo" class="codigo">—</p>
+  </div>
+
+  <div class="ticket-footer">
+    <p>Ticket personal e intransferible</p>
+    <p>© Manchas Plein Air</p>
+  </div>
+
+  <button id="btnPDF">Descargar Ticket en PDF</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const codigo = params.get("codigo");
+  if (!codigo) { alert("Código de ticket no encontrado"); return; }
+
+  try {
+    const res = await fetch(`/api/tickets/${codigo}`);
+    if (!res.ok) throw new Error("Ticket no válido");
+
+    const data = await res.json();
+
+    document.getElementById("nombre").innerText = data.nombre;
+    document.getElementById("evento").innerText = data.evento;
+    document.getElementById("codigo").innerText = data.codigo;
+
+    const categoriaSpan = document.getElementById("categoria");
+    switch (data.categoria) {
+      case "vip": categoriaSpan.innerText = "VIP"; categoriaSpan.className = "categoria vip"; break;
+      case "premium": categoriaSpan.innerText = "PREMIUM"; categoriaSpan.className = "categoria premium"; break;
+      default: categoriaSpan.innerText = "BÁSICO"; categoriaSpan.className = "categoria basico";
+    }
+
+  } catch(err) {
+    console.error(err);
+    alert("No se pudo cargar el ticket");
+  }
+})();
+
+// Descargar PDF
+document.getElementById("btnPDF").addEventListener("click", async () => {
+  const { jsPDF } = window.jspdf;
+  const ticketDiv = document.getElementById("ticket");
+
+  try {
+    const canvas = await html2canvas(ticketDiv, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: null });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [canvas.width, canvas.height] });
+    pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+    pdf.save("ticket.pdf");
+  } catch(err) {
+    console.error(err);
+    alert("Error generando PDF");
+  }
+});
+</script>
+
+</body>
+</html>

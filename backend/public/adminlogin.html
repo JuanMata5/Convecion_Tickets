@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Admin</title>
+</head>
+<body>
+  <h2>Login Admin</h2>
+  <button id="btnLogin">Ingresar al Panel</button>
+
+  <script>
+    document.getElementById("btnLogin").addEventListener("click", () => {
+      // Guardamos algo temporal solo para compatibilidad
+      sessionStorage.setItem("adminKey", "ok");
+      window.location.href = "/admin.html";
+    });
+  </script>
+</body>
+</html>
