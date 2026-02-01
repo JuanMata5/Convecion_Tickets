@@ -130,7 +130,7 @@
   if (!codigo) { alert("Código de ticket no encontrado"); return; }
 
   try {
-    const res = await fetch(`/api/tickets/${codigo}`);
+    const res = await fetch(`/api/ticket?codigo=${codigo}`);
     if (!res.ok) throw new Error("Ticket no válido");
 
     const data = await res.json();
