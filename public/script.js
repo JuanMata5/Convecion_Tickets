@@ -3,7 +3,7 @@
 // Función para crear un ticket
 async function crearTicket() {
   try {
-    const res = await fetch("http://localhost:3000/api/tickets", {
+    const res = await fetch("/api/tickets", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
