@@ -18,18 +18,19 @@ export default function handler(req, res) {
     return;
   }
 
-  // Obtener la ruta sin query string
-  let urlPath = new URL(req.url, `http://${req.headers.host}`).pathname;
+  // Obtener ruta: req.url puede venir como "/ticket.html?codigo=..." o solo "/ticket.html"
+  let urlPath = req.url.split('?')[0]; // Remover query string
   
-  if (urlPath === '/') {
+  if (urlPath === '' || urlPath === '/') {
     urlPath = '/index.html';
   }
 
-  // Construir la ruta del archivo
   const filePath = path.join(__dirname, '../public', urlPath);
   
   try {
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    // Verificar que el archivo existe y es un archivo (no directorio)
+    const stats = fs.statSync(filePath);
+    if (stats.isFile()) {
       const content = fs.readFileSync(filePath);
       const ext = path.extname(filePath);
       const mimeTypes = {
@@ -45,10 +46,10 @@ export default function handler(req, res) {
       return res.status(200).send(content);
     }
   } catch (e) {
-    // Continuar a fallback
+    // Archivo no existe, servir index.html (SPA fallback)
   }
 
-  // Fallback a index.html para SPA
+  // SPA fallback: cualquier ruta que no existe sirve index.html
   try {
     const indexPath = path.join(__dirname, '../public/index.html');
     const content = fs.readFileSync(indexPath);
