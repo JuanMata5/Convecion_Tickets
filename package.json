@@ -1,5 +1,4 @@
-{
-  "scripts": {
+{  "type": "module",  "scripts": {
     "build": "npm install",
     "dev": "node api/tickets.js"
   },
