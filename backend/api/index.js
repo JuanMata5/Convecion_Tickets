@@ -3,7 +3,6 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-import ticketsRoutes from "../routes/tickets.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,7 +12,14 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use("/api/tickets", ticketsRoutes);
+
+// Importar rutas
+try {
+  const { default: ticketsRoutes } = await import("../routes/tickets.js");
+  app.use("/api/tickets", ticketsRoutes);
+} catch (error) {
+  console.error("Error importing tickets routes:", error);
+}
 
 // Servir la carpeta public
 app.use(express.static(path.join(__dirname, "../public")));
