@@ -1,11 +1,6 @@
 import express from "express";
 import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -14,17 +9,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Importar rutas API
-import("./backend/routes/tickets.js").then(({ default: ticketsRoutes }) => {
+// Importar rutas - sin dinámico
+try {
+  const { default: ticketsRoutes } = await import("../backend/routes/tickets.js");
   app.use("/api/tickets", ticketsRoutes);
-}).catch(error => console.error("Error importing routes:", error));
+} catch (error) {
+  console.error("ERROR Loading routes:", error);
+  app.use("/api/tickets", (req, res) => res.status(500).json({ error: error.message }));
+}
 
-// Servir archivos estáticos
-app.use(express.static(path.join(__dirname, "backend", "public")));
-
-// SPA fallback
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "backend", "public", "index.html"));
+// Health check
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok" });
 });
 
 export default app;
