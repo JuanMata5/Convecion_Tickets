@@ -88,7 +88,7 @@ app.delete('/api/delete', (req, res) => {
 app.use(express.static(path.join(__dirname, '../public')));
 
 // SPA fallback - cualquier otra ruta que no sea /api
-app.get('*', (req, res) => {
+app.all('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
