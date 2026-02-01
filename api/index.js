@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Base de datos
 export let tickets = [];
 
 export default function handler(req, res) {
@@ -19,38 +18,43 @@ export default function handler(req, res) {
     return;
   }
 
-  // Servir archivos estáticos desde public/
-  if (req.method === 'GET' && !req.url.startsWith('/api')) {
-    const filePath = path.join(__dirname, '../public', req.url === '/' ? 'index.html' : req.url);
-    
-    try {
-      if (fs.existsSync(filePath)) {
-        const content = fs.readFileSync(filePath);
-        const ext = path.extname(filePath);
-        const mimeTypes = {
-          '.html': 'text/html',
-          '.js': 'text/javascript',
-          '.css': 'text/css',
-          '.json': 'application/json',
-          '.png': 'image/png',
-          '.jpg': 'image/jpeg',
-          '.gif': 'image/gif'
-        };
-        res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
-        return res.status(200).send(content);
-      }
-    } catch (e) {
-      // Fallback a index.html para SPA
-      try {
-        const indexPath = path.join(__dirname, '../public/index.html');
-        const content = fs.readFileSync(indexPath);
-        res.setHeader('Content-Type', 'text/html');
-        return res.status(200).send(content);
-      } catch (e) {
-        return res.status(404).json({ error: 'Not found' });
-      }
-    }
+  // Obtener la ruta sin query string
+  let urlPath = new URL(req.url, `http://${req.headers.host}`).pathname;
+  
+  if (urlPath === '/') {
+    urlPath = '/index.html';
   }
 
-  res.status(404).json({ error: 'Not found' });
+  // Construir la ruta del archivo
+  const filePath = path.join(__dirname, '../public', urlPath);
+  
+  try {
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const content = fs.readFileSync(filePath);
+      const ext = path.extname(filePath);
+      const mimeTypes = {
+        '.html': 'text/html; charset=utf-8',
+        '.js': 'text/javascript',
+        '.css': 'text/css',
+        '.json': 'application/json',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.gif': 'image/gif'
+      };
+      res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+      return res.status(200).send(content);
+    }
+  } catch (e) {
+    // Continuar a fallback
+  }
+
+  // Fallback a index.html para SPA
+  try {
+    const indexPath = path.join(__dirname, '../public/index.html');
+    const content = fs.readFileSync(indexPath);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(200).send(content);
+  } catch (e) {
+    return res.status(404).json({ error: 'Not found' });
+  }
 }
