@@ -1,10 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -82,14 +77,6 @@ app.delete('/api/delete', (req, res) => {
 
   tickets.splice(index, 1);
   return res.json({ mensaje: `Ticket ${codigo} eliminado` });
-});
-
-// ============ STATIC FILES ============
-app.use(express.static(path.join(__dirname, '../public')));
-
-// SPA fallback - cualquier otra ruta que no sea /api
-app.all('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 export default app;
