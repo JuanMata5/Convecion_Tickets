@@ -78,4 +78,5 @@ app.get("/:path*", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
+// Exportar como handler de Vercel
 export default app;
