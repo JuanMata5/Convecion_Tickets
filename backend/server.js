@@ -24,6 +24,11 @@ app.use(express.static(path.join(__dirname, "public")));
 // 404
 app.use((req,res)=>res.status(404).json({ error: "Ruta no encontrada" }));
 
+// 404 para frontend
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Servidor escuchando en http://localhost:" + PORT);
